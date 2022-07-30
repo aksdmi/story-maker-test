@@ -82,19 +82,6 @@ class TextFormatter:
 
 formatter = TextFormatter(list_of_strings, list_of_strings_positions, stop_words)
 
-# print(list(formatter.get_tuples()))
-# for x in list(elm for elm in itertools.chain(formatter.get_tuples(formatter.positions, None))):
-#     print(list(x))
-
-# a = (pos for pos in formatter.get_tuples(formatter.positions, None))
-# pass
-# print((x, y for x, y in sorted()))
-
-# print(formatter.get_as_list('Dima'))
-# print(formatter.get_as_text('Dima'))
-
-# print(formatter.get_as_list('Dima'))
-
 arguments_parser = argparse.ArgumentParser(prog="python3 main.py", description="Консольный рассказчик.")
 arguments_parser.add_argument('-u',
                               '--username',
