@@ -12,8 +12,22 @@ class TextFormatter:
         self.positions = positions
         self.stop_words = stop_words if stop_words else []
 
+    def get_tuples(self, pos_list, par_index):
+        for i, elm in enumerate(pos_list):
+            if isinstance(elm, list):
+                yield from self.get_tuples(elm, i)
+            else:
+                if par_index:
+                    yield par_index, elm
+                else:
+                    yield i, elm
 
-               
+
+    def check_and_replace(self, cstr : str):
+        if '{username}' in cstr:
+            return self.username
+        else:
+            return cstr
 
     def get_as_list(self, username: str) -> list:
         """
@@ -23,30 +37,10 @@ class TextFormatter:
         :param username: Имя пользователя
         :return: Список слов в правильном порядке
         """
-        resdict = {}
-        for i in range(len(self.positions)):
-            val = self.positions[i]
-            val2 = self.strings[i]
-            
-            if val2 in self.stop_words:
-                continue
-
-            if val2 == "{username}":
-                val2 = username
-
-
-            if isinstance(val, list):
-                for j in range(len(val)):
-                    resdict[val[j]] = val2    
-            else:
-                # reslist.insert(val, self.strings[i])
-                resdict[val] = val2
-        
-        # for x in sorted(resdict.keys()):
-        #     print(resdict[x])
-
-
-        return [resdict[x] for x in sorted(resdict.keys())]
+        self.username = username
+        pre_strings = [self.strings[i] for i, _ in sorted(self.get_tuples(self.positions, None), key=lambda x: x[1])
+                                                                                    if self.strings[i] not in self.stop_words]
+        return list(map(self.check_and_replace, pre_strings))
 
 
 
@@ -63,46 +57,43 @@ class TextFormatter:
         
         strlist = self.get_as_list(username)
 
-        was_sign = False
-        was_dot = False
-
-        stop_signs = ('.', '!', '?', ',')
-
-        strlist2 = []
-
         if not strlist:
             return ''
 
-        first = True
+        was_sign = False
+        
+        stop_signs = ('.', '!', '?')
 
-        for mstr in strlist:
+        strlist[0] = strlist[0].title()
+
+        for i in range(1, len(strlist)):
+            mstr = strlist[i]
+        
             if mstr in stop_signs:
                 was_sign = True
-                if mstr == '.':
-                    was_dot = True
-                strlist2.append(mstr)
             elif was_sign:
-                if was_dot:
-                    strlist2.append(f' {mstr.title()}')
-                    was_dot = False
-                else:
-                    strlist2.append(mstr)
-                    was_sign = False
-            else:
-                if first:
-                    strlist2.append(mstr.title())
-                    first = False
-                else:
-                    strlist2.append(mstr)
+                strlist[i] = ' ' + mstr.title()
+                was_sign = False
+            elif mstr != ',':
+                strlist[i] = ' ' + mstr
         
-        return ' '.join(strlist2)
+        return ''.join(strlist)
 
 
 formatter = TextFormatter(list_of_strings, list_of_strings_positions, stop_words)
 
-# print(formatter.get_as_list('Dima'))
-print(formatter.get_as_text('Dima'))
+# print(list(formatter.get_tuples()))
+# for x in list(elm for elm in itertools.chain(formatter.get_tuples(formatter.positions, None))):
+#     print(list(x))
 
+# a = (pos for pos in formatter.get_tuples(formatter.positions, None))
+# pass
+# print((x, y for x, y in sorted()))
+
+# print(formatter.get_as_list('Dima'))
+# print(formatter.get_as_text('Dima'))
+
+# print(formatter.get_as_list('Dima'))
 
 arguments_parser = argparse.ArgumentParser(prog="python3 main.py", description="Консольный рассказчик.")
 arguments_parser.add_argument('-u',
